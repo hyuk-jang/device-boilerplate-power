@@ -28,5 +28,9 @@
     "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
     "prettier": "^1.14.0"
+  },
+  "dependencies": {
+    "base-util-jh": "^1.1.13",
+    "lodash": "^4.17.10"
   }
 }

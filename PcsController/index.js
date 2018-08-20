@@ -6,6 +6,11 @@ module.exports = Control;
 if (require !== undefined && require.main === module) {
   console.log('__main__');
 
+  const mainConfig = require('./src/config');
+  const controller = new Control(mainConfig);
+
+  controller.init();
+
   process.on('uncaughtException', err => {
     // BU.debugConsole();
     console.error(err.stack);
