@@ -93,12 +93,7 @@ class Control extends AbstDeviceClient {
 
       this.executeCommand(commandSet);
     } catch (error) {
-      this.observerList.forEach(observer => {
-        if (_.get(observer, 'notifyDeviceData')) {
-          observer.notifyDeviceData(this);
-        }
-      });
-      BU.CLI(error.message);
+      throw error;
     }
   }
 
@@ -145,18 +140,6 @@ class Control extends AbstDeviceClient {
    * @param {dcMessage} dcMessage
    */
   onDcMessage(dcMessage) {
-    // super.onDcMessage(dcMessage);
-    switch (dcMessage.msgCode) {
-      // 명령 수행이 완료되었다고 판단이 되면 현재 진행중인 명령 완료로 처리
-      case this.definedCommandSetMessage.COMMANDSET_EXECUTION_TERMINATE:
-      case this.definedCommandSetMessage.COMMANDSET_DELETE:
-        // BU.CLIN(this.model.requestCommandSetList);
-        this.model.completeRequestCommandSet(dcMessage.commandSet);
-        break;
-      default:
-        break;
-    }
-
     // Observer가 해당 메소드를 가지고 있다면 전송
     this.observerList.forEach(observer => {
       if (_.get(observer, 'notifyDeviceMessage')) {
@@ -175,7 +158,7 @@ class Control extends AbstDeviceClient {
       BU.CLI('data', dcData.data.toString());
       const parsedData = this.converter.parsingUpdateData(dcData);
 
-      BU.CLI(parsedData);
+      // BU.CLI(parsedData);
       // 만약 파싱 에러가 발생한다면 명령 재 요청
       if (parsedData.eventCode === this.definedCommanderResponse.ERROR) {
         BU.errorLog('inverter', 'parsingError', parsedData);

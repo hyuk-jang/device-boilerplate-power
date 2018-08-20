@@ -11,6 +11,13 @@ if (require !== undefined && require.main === module) {
 
   controller.init();
 
+  setTimeout(() => {
+    const command = controller.converter.generationCommand(
+      controller.baseModel.device.DEFAULT.COMMAND.STATUS,
+    );
+    controller.orderOperation(command);
+  }, 1000);
+
   process.on('uncaughtException', err => {
     // BU.debugConsole();
     console.error(err.stack);
