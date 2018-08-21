@@ -1,10 +1,10 @@
 module.exports = {
   current: {
     dbInfo: {
-      host: process.env.INVERTER_HOST ? process.env.INVERTER_HOST : 'localhost',
-      user: process.env.INVERTER_USER ? process.env.INVERTER_USER : 'root',
-      password: process.env.INVERTER_PW ? process.env.INVERTER_PW : 'smsoftware',
-      database: process.env.INVERTER_DB ? process.env.INVERTER_DB : 'pv_led',
+      host: process.env.DB_FP_HOST ? process.env.DB_FP_HOST : 'localhost',
+      user: process.env.DB_FP_USER ? process.env.DB_FP_USER : 'root',
+      password: process.env.DB_FP_PW ? process.env.DB_FP_PW : 'smsoftware',
+      database: process.env.DB_FP_DB ? process.env.DB_FP_DB : 'pv_led',
     },
     uuid: 'aaaaa',
     deviceControllerList: [

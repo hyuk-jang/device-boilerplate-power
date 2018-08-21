@@ -2,8 +2,8 @@ const _ = require('lodash');
 const cron = require('cron');
 const Promise = require('bluebird');
 
-const {BU} = require('base-util-jh');
-const {BM} = require('base-model-jh');
+const { BU } = require('base-util-jh');
+const { BM } = require('base-model-jh');
 
 const moment = require('moment');
 const Model = require('./Model');
@@ -44,14 +44,16 @@ class Control {
   /**
    * 장치 컨트롤러 리스트 생성
    * @param {dbInfo=} dbInfo
+   * @param {string} mainUuid main UUID
    */
-  async init(dbInfo) {
+  async init(dbInfo, mainUuid) {
+    // DB 정보를 입력할 경우 해당 DB에 접속하여 정보를 취득
     if (dbInfo) {
       this.config.dbInfo = dbInfo;
       const biModule = new BM(dbInfo);
 
       const returnValue = [];
-      const deviceList = await biModule.getTable('v_pw_inverter_status', {uuid: this.config.uuid});
+      const deviceList = await biModule.getTable('v_pw_inverter_profile', { uuid: mainUuid });
       deviceList.forEach(element => {
         element.protocol_info = JSON.parse(_.get(element, 'protocol_info'));
         element.connect_info = JSON.parse(_.get(element, 'connect_info'));
@@ -70,7 +72,7 @@ class Control {
         };
         // element.protocol_info = _.replace() _.get(element, 'protocol_info') ;
         const addObj = {
-          hasDev: false,
+          hasDev: true,
           deviceInfo: element,
         };
 
@@ -80,8 +82,28 @@ class Control {
       this.config.deviceControllerList = returnValue;
     }
 
-    // BU.CLI(this.config.deviceControllerList);
-    this.model = new Model(this);
+    try {
+      // 하부 PCS 순회
+      const resultInitPcsList = await Promise.map(
+        this.config.deviceControllerList,
+        deviceControllerInfo => {
+          const controller = new PcsController(deviceControllerInfo);
+          // 컨트롤러에 현 객체 Observer 등록
+          controller.attach(this);
+          return controller.init();
+        }
+      );
+
+      // 하부 PCS 객체 리스트 정의
+      this.deviceControllerList = resultInitPcsList;
+
+      // 모델 생성 및 정의
+      this.model = new Model(this);
+
+      return this.deviceControllerList;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -122,7 +144,7 @@ class Control {
     // TODO: length 0 이 되기전 스케줄러가 실행될 경우 리셋되는 문제 해결 필요
     // BU.CLI(this.cronDeviceList.length);
     if (this.cronDeviceList.length === 0) {
-      this.model.updateDeviceCategory(this.measureDate, 'PCS');
+      this.model.updateDeviceCategory(this.measureDate, 'inverter');
     }
   }
 
@@ -134,11 +156,12 @@ class Control {
    */
   notifyDeviceError(device, dcError) {}
 
-  // Cron 구동시킬 시간
+  /**
+   * 하부 장치 조회 스케줄러 동작
+   */
   runCronDiscoveryRegularDevice() {
     // this.measureDate = moment();
     // this.measureRegularDevice();
-
     try {
       if (this.cronScheduler !== null) {
         // BU.CLI('Stop')
@@ -160,10 +183,10 @@ class Control {
   }
 
   /**
-   * 정기적인 Inverter Status 탐색
+   * 정기적인 장치 리스트 계측 탐색
    */
   discoveryRegularDevice() {
-    BU.CLI('measureRegularInverter');
+    BU.CLI('discoveryRegularDevice');
     // 응답을 기다리는 장치 초기화
     this.cronDeviceList = _.clone(this.deviceControllerList);
 
@@ -178,7 +201,7 @@ class Control {
     // FIXME: 모든 장치 Promise 바인딩 필요
     this.deviceControllerList.forEach(deviceController => {
       const commandInfoList = deviceController.converter.generationCommand(
-        deviceController.baseModel.device.DEFAULT.COMMAND.STATUS,
+        deviceController.baseModel.device.DEFAULT.COMMAND.STATUS
       );
       deviceController.orderOperation(commandInfoList);
     });

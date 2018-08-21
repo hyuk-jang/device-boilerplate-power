@@ -1,10 +1,10 @@
 const _ = require('lodash');
 
-const {BU} = require('base-util-jh');
+const { BU } = require('base-util-jh');
 const AbstDeviceClientModel = require('../../device-client-model-jh');
 const Control = require('./Control');
 
-const refinedDeviceDataConfig = require('../config/refinedDeviceDataConfig');
+const powerFormat = require('../config/powerFormat');
 
 const PcsController = require('../PcsController');
 
@@ -14,7 +14,7 @@ class Model {
    * @param {Control} controller
    */
   constructor(controller) {
-    this.deviceClientModel = new AbstDeviceClientModel(refinedDeviceDataConfig);
+    this.deviceClientModel = new AbstDeviceClientModel(powerFormat);
 
     this.controller = controller;
 
@@ -28,7 +28,7 @@ class Model {
     // super.hasSaveToDB = true;
 
     this.controller.config.deviceControllerList.forEach(deviceControllerInfo => {
-      this.deviceClientModel.setDevice(deviceControllerInfo.current.deviceInfo, {
+      this.deviceClientModel.setDevice(deviceControllerInfo.deviceInfo, {
         idKey: 'target_id',
         deviceCategoryKey: 'target_category',
       });
@@ -48,7 +48,7 @@ class Model {
     // 모델에 데이터 갱신
     const dataStorageContainer = this.deviceClientModel.onDeviceOperationInfo(
       deviceOperationInfo,
-      deviceController.config.deviceInfo.target_category,
+      deviceController.config.deviceInfo.target_category
     );
 
     // BU.CLIN(dataStorageContainer, 4);
@@ -68,7 +68,7 @@ class Model {
       BU.CLI('updateDeviceCategory');
       const convertDataList = await this.deviceClientModel.refineTheDataToSaveDB(
         category,
-        measureDate,
+        measureDate
       );
       BU.CLIN(convertDataList, 2);
 

@@ -1,6 +1,8 @@
 const _ = require('lodash');
 const {BU} = require('base-util-jh');
 
+const eventToPromise = require('event-to-promise');
+
 const EchoServer = require('../../../device-echo-server-jh');
 // const AbstDeviceClient = require('device-client-controller-jh');
 const AbstDeviceClient = require('../../../device-client-controller-jh');
@@ -17,14 +19,19 @@ class Control extends AbstDeviceClient {
     super();
 
     this.config = config || mainConfig;
+    this.connectInfo = this.config.deviceInfo.connect_info;
+    this.protocolInfo = this.config.deviceInfo.protocol_info;
 
-    this.converter = new AbstConverter(this.config.deviceInfo.protocol_info);
+    this.converter = new AbstConverter(this.protocolInfo);
     // 상위 객체, 외부에서 baseModel을 이용하여 명령 요청
-    this.baseModel = new BaseModel.Inverter(this.config.deviceInfo.protocol_info);
+    this.baseModel = new BaseModel.Inverter(this.protocolInfo);
 
     this.model = new Model(this);
 
     this.observerList = [];
+
+    /** PCS와 연결되어있는지 여부 */
+    // this.hasConnectedPCS = false;
   }
 
   /**
@@ -43,15 +50,34 @@ class Control extends AbstDeviceClient {
     return this.config.deviceInfo.target_category;
   }
 
-  /** device client 설정 및 프로토콜 바인딩 */
-  init() {
+  /**
+   * device client 설정 및 프로토콜 바인딩
+   * @return {Promise.<Control>} 생성된 현 객체 반환
+   */
+  async init() {
     /** 개발 버젼일 경우 Echo Server 구동 */
     if (this.config.hasDev) {
-      const echoServer = new EchoServer(this.config.deviceInfo.connect_info.port);
-      echoServer.attachDevice(this.config.deviceInfo.protocol_info);
+      const echoServer = new EchoServer(this.connectInfo.port);
+      echoServer.attachDevice(this.protocolInfo);
     }
-    this.setDeviceClient(this.config.deviceInfo);
-    this.converter.setProtocolConverter(this.config.deviceInfo);
+
+    try {
+      // 프로토콜 컨버터 바인딩
+      this.converter.setProtocolConverter();
+      // DCC 초기화 및 장치 접속 진행
+      this.setDeviceClient(this.config.deviceInfo);
+      // 장치 접속 결과를 기다림
+      await eventToPromise.multi(
+        this,
+        [this.definedControlEvent.CONNECT],
+        [this.definedControlEvent.DISCONNECT],
+      );
+      // Controller 반환
+      return this;
+    } catch (error) {
+      // Controller 반환
+      return this;
+    }
   }
 
   /**
@@ -84,6 +110,10 @@ class Control extends AbstDeviceClient {
   orderOperation(commandInfoList) {
     BU.CLI(commandInfoList);
     try {
+      if (!this.hasConnectedDevice) {
+        throw new Error(`The device has been disconnected. ${_.get(this.connectInfo, 'port')}`);
+      }
+
       const commandSet = this.generationManualCommand({
         cmdList: commandInfoList,
         commandId: this.id,
@@ -107,6 +137,18 @@ class Control extends AbstDeviceClient {
    */
   updatedDcEventOnDevice(dcEvent) {
     super.updatedDcEventOnDevice(dcEvent);
+
+    switch (dcEvent.eventName) {
+      case this.definedControlEvent.CONNECT:
+        this.emit(this.definedControlEvent.CONNECT);
+        break;
+      case this.definedControlEvent.DISCONNECT:
+        this.emit(this.definedControlEvent.DISCONNECT);
+        break;
+      default:
+        break;
+    }
+
     // Observer가 해당 메소드를 가지고 있다면 전송
     _.forEach(this.observerList, observer => {
       if (_.get(observer, 'notifyDeviceEvent')) {
@@ -154,8 +196,9 @@ class Control extends AbstDeviceClient {
    * @param {dcData} dcData 현재 장비에서 실행되고 있는 명령 객체
    */
   onDcData(dcData) {
+    super.onDcData(dcData);
     try {
-      BU.CLI('data', dcData.data.toString());
+      // BU.CLI('data', dcData.data.toString());
       const parsedData = this.converter.parsingUpdateData(dcData);
 
       // BU.CLI(parsedData);
@@ -171,7 +214,7 @@ class Control extends AbstDeviceClient {
       }
 
       // Device Client로 해당 이벤트 Code를 보냄
-      BU.CLIN(this.getDeviceOperationInfo().data);
+      // BU.CLIN(this.getDeviceOperationInfo().data);
       return this.requestTakeAction(parsedData.eventCode);
     } catch (error) {
       BU.CLI(error);

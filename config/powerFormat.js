@@ -1,5 +1,6 @@
-const Converter = require('device-protocol-converter-jh');
-// const Converter = require('../../../module/device-protocol-converter-jh');
+// const Converter = require('device-protocol-converter-jh');
+const Converter = require('../../device-protocol-converter-jh');
+
 const keyInfo = Converter.BaseModel.Inverter.BASE_KEY;
 
 /**
@@ -12,7 +13,7 @@ module.exports = [
   {
     deviceCategory: 'inverter',
     troubleTableInfo: {
-      tableName: 'inverter_trouble_data',
+      tableName: 'pw_inverter_trouble_data',
       /** @type {Array.<tableParamFormat>} */
       addParamList: [
         {
@@ -34,8 +35,8 @@ module.exports = [
       },
     },
     dataTableInfo: {
-      tableName: 'inverter_data',
-      /** @type {Array.<tableParamFormat>} */
+      tableName: 'pw_inverter_data',
+      /** @type {tableParamFormat[]} */
       addParamList: [
         {
           fromKey: 'inverter_seq',
@@ -47,56 +48,56 @@ module.exports = [
         {
           fromKey: keyInfo.pvAmp,
           toKey: 'in_a',
-          calculate: 10,
-          toFixed: 0,
+          calculate: 1,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.pvVol,
           toKey: 'in_v',
-          calculate: 10,
-          toFixed: 0,
+          calculate: 1,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.pvKw,
           toKey: 'in_w',
-          calculate: 10000,
-          toFixed: 0,
+          calculate: 1000,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.gridRAmp,
           toKey: 'out_a',
-          calculate: 10,
-          toFixed: 0,
+          calculate: 1,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.gridRsVol,
           toKey: 'out_v',
-          calculate: 10,
-          toFixed: 0,
+          calculate: 1,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.powerGridKw,
           toKey: 'out_w',
-          calculate: 10000,
-          toFixed: 0,
+          calculate: 1000,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.gridLf,
           toKey: 'lf',
-          calculate: 10,
-          toFixed: 0,
+          calculate: 1,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.powerPf,
           toKey: 'p_f',
           calculate: `${keyInfo.powerGridKw} / ${keyInfo.pvKw} * 1000`,
-          toFixed: 0,
+          toFixed: 1,
         },
         {
           fromKey: keyInfo.powerCpKwh,
           toKey: 'c_wh',
-          calculate: 10000,
-          toFixed: 0,
+          calculate: 1000,
+          toFixed: 1,
         },
       ],
     },

@@ -5,18 +5,23 @@ module.exports = Control;
 // if __main process
 if (require !== undefined && require.main === module) {
   console.log('__main__');
-
+  const {BU} = require('base-util-jh');
   const mainConfig = require('./src/config');
   const controller = new Control(mainConfig);
 
-  controller.init();
-
-  setTimeout(() => {
-    const command = controller.converter.generationCommand(
-      controller.baseModel.device.DEFAULT.COMMAND.STATUS,
-    );
-    controller.orderOperation(command);
-  }, 1000);
+  controller
+    .init()
+    .then(hasConnected => {
+      console.trace(hasConnected);
+      const command = controller.converter.generationCommand(
+        controller.baseModel.device.DEFAULT.COMMAND.STATUS,
+      );
+      controller.orderOperation(command);
+    })
+    .catch(err => {
+      BU.CLI(err);
+      BU.CLI(controller.hasConnectedDevice);
+    });
 
   process.on('uncaughtException', err => {
     // BU.debugConsole();
