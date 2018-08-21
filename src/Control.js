@@ -107,25 +107,6 @@ class Control {
   }
 
   /**
-   * 장치 설정 값에 따라 장치 계측 컨트롤러 생성 및 계측 스케줄러 실행
-   * @returns {Promise} 장치 계측 컨트롤러 생성 결과 Promise
-   */
-  async createDeviceController() {
-    // BU.CLI('createInverterController');
-    this.config.deviceControllerList.forEach(deviceControllerInfo => {
-      const deviceController = new PcsController(deviceControllerInfo);
-      deviceController.init();
-      deviceController.attach(this);
-      this.deviceControllerList.push(deviceController);
-    });
-
-    // FIXME: 시스템 초기화 후 5초 후에 장치 계측 스케줄러 실행. 초기화 완료 후 구동되게끔 변경
-    Promise.delay(1000 * 5).then(() => {
-      this.runCronDiscoveryRegularDevice();
-    });
-  }
-
-  /**
    * 장치로부터 계측 명령을 완료했다고 알려옴
    * @param {Device} device
    */

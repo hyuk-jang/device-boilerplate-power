@@ -66,6 +66,12 @@ class Control extends AbstDeviceClient {
       this.converter.setProtocolConverter();
       // DCC 초기화 및 장치 접속 진행
       this.setDeviceClient(this.config.deviceInfo);
+
+      // 만약 장치가 접속된 상태라면
+      if (this.hasConnectedDevice) {
+        return this;
+      }
+
       // 장치 접속 결과를 기다림
       await eventToPromise.multi(
         this,
