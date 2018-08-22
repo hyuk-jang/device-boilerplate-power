@@ -83,14 +83,14 @@ module.exports = [
         },
         {
           fromKey: keyInfo.gridLf,
-          toKey: 'lf',
+          toKey: 'l_f',
           calculate: 1,
           toFixed: 1,
         },
         {
           fromKey: keyInfo.powerPf,
           toKey: 'p_f',
-          calculate: `${keyInfo.powerGridKw} / ${keyInfo.pvKw} * 1000`,
+          calculate: `${keyInfo.powerGridKw} / ${keyInfo.pvKw} * 100`,
           toFixed: 1,
         },
         {

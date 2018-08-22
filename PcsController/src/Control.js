@@ -110,16 +110,18 @@ class Control extends AbstDeviceClient {
   }
 
   /**
-   *
+   * PCS에 명령 수행 요청
    * @param {commandInfo[]} commandInfoList
+   * @return {commandSet} 고유 명령 집합
    */
   orderOperation(commandInfoList) {
-    BU.CLI(commandInfoList);
+    // BU.CLI(commandInfoList);
     try {
       if (!this.hasConnectedDevice) {
         throw new Error(`The device has been disconnected. ${_.get(this.connectInfo, 'port')}`);
       }
 
+      // 생성된 고유 명령 집합
       const commandSet = this.generationManualCommand({
         cmdList: commandInfoList,
         commandId: this.id,
@@ -127,7 +129,10 @@ class Control extends AbstDeviceClient {
 
       // BU.CLIN(commandSet);
 
+      // 장치 매니저에 명령 실행 요청
       this.executeCommand(commandSet);
+
+      return commandSet;
     } catch (error) {
       throw error;
     }
@@ -202,7 +207,7 @@ class Control extends AbstDeviceClient {
    * @param {dcData} dcData 현재 장비에서 실행되고 있는 명령 객체
    */
   onDcData(dcData) {
-    super.onDcData(dcData);
+    // super.onDcData(dcData);
     try {
       // BU.CLI('data', dcData.data.toString());
       const parsedData = this.converter.parsingUpdateData(dcData);
