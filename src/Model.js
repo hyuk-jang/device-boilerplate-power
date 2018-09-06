@@ -1,18 +1,13 @@
 const _ = require('lodash');
-const moment = require('moment');
-
 const {BU} = require('base-util-jh');
 const AbstDeviceClientModel = require('../../device-client-model-jh');
-const Control = require('./Control');
 
 const powerFormat = require('../config/powerFormat');
-
-const PcsController = require('../PcsController');
 
 class Model {
   /**
    *
-   * @param {Control} controller
+   * @param {PowerController} controller
    */
   constructor(controller) {
     this.deviceClientModel = new AbstDeviceClientModel(powerFormat);
@@ -124,7 +119,7 @@ class Model {
    * 장치 데이터는 InsertDataList에 기입
    * 에러 데이터는 DB에 저장되어 있는 현재 에러와 비교 후 InsertTroubleList, UpdateTroubleList로 각각 계산 후 기입
    * 정제 테이블을 기초로 계산하며 DB 업데이트가 완료되면 Storage의 데이터는 초기화 됨.
-   * @param {moment.Moment} momentDate Update 가 된 시각
+   * @param {Moment} momentDate Update 가 된 시각
    * @param {string} category Update 처리 할 카테고리
    */
   async updateDeviceCategory(momentDate, category) {
@@ -153,7 +148,7 @@ module.exports = Model;
 
 /**
  * @typedef {Object} deviceCommandContainerInfo
- * @property {moment.Moment} momentDate 명령 요청 시각
+ * @property {Moment} momentDate 명령 요청 시각
  * @property {Timer} timeoutTimer 정해진 시간안에 해당 명령의 응답 대기 인터벌.
  * @property {deviceCommandEleInfo[]} deviceCommandList 명령에 관련된 세부 사항
  */

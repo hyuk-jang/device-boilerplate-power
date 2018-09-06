@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 
 const {BU, CU} = require('base-util-jh');
 
-const {Timer} = CU;
+// const {Timer} = CU;
 const {BM} = require('base-model-jh');
 
 const moment = require('moment');
@@ -21,7 +21,7 @@ class Control {
     // 장치를 계측하기 위한 스케줄러 객체
     this.cronScheduler = null;
 
-    /** @type {Array.<PcsController>} */
+    /** @type {PcsController[]} */
     this.deviceControllerList = [];
     // 장치 계측이 완료되었는지 체크하기 위한 배열
     this.cronDeviceList = [];

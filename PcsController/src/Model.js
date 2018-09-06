@@ -2,14 +2,12 @@ const _ = require('lodash');
 
 const {BU, CU} = require('base-util-jh');
 
-const Control = require('./Control');
-
 // const {BaseModel} = require('device-protocol-converter-jh');
 const {BaseModel} = require('../../../device-protocol-converter-jh');
 
 class Model {
   /**
-   * @param {Control} controller
+   * @param {PcsController} controller
    */
   constructor(controller) {
     this.controller = controller;
