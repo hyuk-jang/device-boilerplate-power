@@ -6,7 +6,7 @@ module.exports = Control;
 if (require !== undefined && require.main === module) {
   console.log('__main__');
   require('dotenv').config();
-  const { BU } = require('base-util-jh');
+  const {BU} = require('base-util-jh');
 
   const mainConfig = require('./src/config');
   const controller = new Control(mainConfig);

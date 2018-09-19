@@ -52,11 +52,12 @@ class Control extends AbstDeviceClient {
 
   /**
    * device client 설정 및 프로토콜 바인딩
+   * @param {string=} siteUUID 장치가 연결된 지점을 특정지을 or 개소, setPassiveClient에 사용
    * @return {Promise.<Control>} 생성된 현 객체 반환
    */
-  async init() {
+  async init(siteUUID) {
     /** 개발 버젼일 경우 Echo Server 구동 */
-    if (this.config.hasDev) {
+    if (this.config.hasDev && _.get(this, 'connectInfo.port')) {
       const echoServer = new EchoServer(this.connectInfo.port);
       echoServer.attachDevice(this.protocolInfo);
     }
@@ -65,6 +66,17 @@ class Control extends AbstDeviceClient {
       // 프로토콜 컨버터 바인딩
       this.converter.setProtocolConverter();
       // DCC 초기화 및 장치 접속 진행
+
+      // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
+      if (_.isEmpty(this.config.deviceInfo.connect_info)) {
+        if (_.isString(siteUUID)) {
+          this.setPassiveClient(this.config.deviceInfo, siteUUID);
+          return this;
+        }
+        throw new ReferenceError('Initialization failed.');
+      }
+
+      // 접속 경로가 존재시 선언 및 자동 접속을 수행
       this.setDeviceClient(this.config.deviceInfo);
 
       // 만약 장치가 접속된 상태라면
@@ -81,7 +93,11 @@ class Control extends AbstDeviceClient {
       // Controller 반환
       return this;
     } catch (error) {
-      // Controller 반환
+      // 초기화에 실패할 경우에는 에러 처리
+      if (error instanceof ReferenceError) {
+        throw error;
+      }
+      // 일반적인 오류일 경우에는 현재 객체 반환 Controller 반환
       return this;
     }
   }
@@ -115,7 +131,7 @@ class Control extends AbstDeviceClient {
    * @return {commandSet} 고유 명령 집합
    */
   orderOperation(commandInfoList) {
-    // BU.CLI(commandInfoList);
+    BU.CLI(commandInfoList);
     try {
       if (!this.hasConnectedDevice) {
         throw new Error(`The device has been disconnected. ${_.get(this.connectInfo, 'port')}`);

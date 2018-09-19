@@ -15,6 +15,7 @@
   "author": "j.hyuk",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^10.10.1",
     "chai": "^4.1.2",
     "docdash": "^0.4.0",
     "dotenv": "^6.0.0",

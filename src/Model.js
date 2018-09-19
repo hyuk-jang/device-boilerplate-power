@@ -24,7 +24,8 @@ class Model {
 
   /** DeviceClientModel을 사용하기 위해 Device Controller List를 순회하면서 초기화  */
   init() {
-    // super.hasSaveToDB = true;
+    this.deviceClientModel.setHasSaveToDB(true);
+
     // Device Controller 목록 만큼 순회하면서 DCM 객체를 생성
     this.controller.config.deviceControllerList.forEach(deviceControllerInfo => {
       // DCM 에서 관리할 Category와 Storage ID 를 설정
@@ -131,10 +132,10 @@ class Model {
         category,
         momentDate.toDate(),
       );
-      // BU.CLIN(convertDataList, 2);
+      BU.CLIN(convertDataList, 3);
 
-      // const resultSaveToDB = await this.deviceClientModel.saveDataToDB(category);
-      // BU.CLIN(resultSaveToDB);
+      const resultSaveToDB = await this.deviceClientModel.saveDataToDB(category);
+      BU.CLIN(resultSaveToDB);
 
       return true;
     } catch (error) {

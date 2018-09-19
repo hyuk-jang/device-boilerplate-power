@@ -3,14 +3,14 @@ const cron = require('cron');
 const Promise = require('bluebird');
 
 const {BU, CU} = require('base-util-jh');
-
-// const {Timer} = CU;
 const {BM} = require('base-model-jh');
 
 const moment = require('moment');
 const Model = require('./Model');
 
-const PcsController = require('../PcsController');
+// const PcsController = require('../PcsController');
+
+const PcsController = require('../PcsController/src/Control');
 
 class Control {
   /** @param {defaultManagerConfig} config */
@@ -26,7 +26,7 @@ class Control {
     // 장치 계측이 완료되었는지 체크하기 위한 배열
     this.cronDeviceList = [];
 
-    /** @type {deviceCommandContainerInfo[]} */
+    /** @type {deviceCommandContainerInfo[]} 현재 진행중인 명령 목록 */
     this.deviceCommandContainerList = [];
   }
 
@@ -111,28 +111,28 @@ class Control {
     }
   }
 
-  // /**
-  //  * 장치로부터 계측 명령을 완료했다고 알려옴
-  //  * @param {Device} device
-  //  */
-  // notifyDeviceData(device) {
-  //   // BU.CLI('notifyDeviceData', device.id);
-  //   // 알려온 Inverter 데이터가
-  //   _.remove(this.cronDeviceList, cronDevice => {
-  //     if (_.isEqual(cronDevice, device)) {
-  //       // 장치 데이터 모델에 반영
-  //       this.model.onDeviceData(device);
-  //       return true;
-  //     }
-  //   });
+  /**
+   * 장치로부터 계측 명령을 완료했다고 알려옴
+   * @param {Device} device
+   */
+  notifyDeviceData(device) {
+    // BU.CLI('notifyDeviceData', device.id);
+    // 알려온 Inverter 데이터가
+    _.remove(this.cronDeviceList, cronDevice => {
+      if (_.isEqual(cronDevice, device)) {
+        // 장치 데이터 모델에 반영
+        this.model.onDeviceData(device);
+        return true;
+      }
+    });
 
-  //   // 모든 장치의 계측이 완료되었다면
-  //   // TODO: length 0 이 되기전 스케줄러가 실행될 경우 리셋되는 문제 해결 필요
-  //   // BU.CLI(this.cronDeviceList.length);
-  //   if (this.cronDeviceList.length === 0) {
-  //     this.model.updateDeviceCategory(this.measureDate, 'inverter');
-  //   }
-  // }
+    // 모든 장치의 계측이 완료되었다면
+    // TODO: length 0 이 되기전 스케줄러가 실행될 경우 리셋되는 문제 해결 필요
+    // BU.CLI(this.cronDeviceList.length);
+    if (this.cronDeviceList.length === 0) {
+      this.model.updateDeviceCategory(this.measureDate, 'inverter');
+    }
+  }
 
   /**
    * 장치로부터 계측 명령을 완료했다고 알려옴
