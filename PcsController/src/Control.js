@@ -1,7 +1,7 @@
 const _ = require('lodash');
-const {BU} = require('base-util-jh');
-
 const eventToPromise = require('event-to-promise');
+
+const {BU} = require('base-util-jh');
 
 const EchoServer = require('../../../device-echo-server-jh');
 // const AbstDeviceClient = require('device-client-controller-jh');
@@ -13,7 +13,7 @@ const {AbstConverter, BaseModel} = require('../../../device-protocol-converter-j
 const Model = require('./Model');
 const mainConfig = require('./config');
 
-class Control extends AbstDeviceClient {
+class PcsController extends AbstDeviceClient {
   /** @param {defaultControlConfig} config */
   constructor(config) {
     super();
@@ -53,7 +53,7 @@ class Control extends AbstDeviceClient {
   /**
    * device client 설정 및 프로토콜 바인딩
    * @param {string=} siteUUID 장치가 연결된 지점을 특정지을 or 개소, setPassiveClient에 사용
-   * @return {Promise.<Control>} 생성된 현 객체 반환
+   * @return {Promise.<PcsController>} 생성된 현 객체 반환
    */
   async init(siteUUID) {
     /** 개발 버젼일 경우 Echo Server 구동 */
@@ -65,11 +65,13 @@ class Control extends AbstDeviceClient {
     try {
       // 프로토콜 컨버터 바인딩
       this.converter.setProtocolConverter();
-      // DCC 초기화 및 장치 접속 진행
-
-      // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
+      
+      // DCC 초기화 시작
       if (_.isEmpty(this.config.deviceInfo.connect_info)) {
+        // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
         if (_.isString(siteUUID)) {
+          // 해당 사이트 고유 ID
+          this.siteUUID = siteUUID;
           this.setPassiveClient(this.config.deviceInfo, siteUUID);
           return this;
         }
@@ -131,7 +133,9 @@ class Control extends AbstDeviceClient {
    * @return {commandSet} 고유 명령 집합
    */
   orderOperation(commandInfoList) {
-    BU.CLI(commandInfoList);
+    // BU.CLI(commandInfoList);
+    // 계측 명령을 수신하면 Model Data 초기화
+    this.model.initModel();
     try {
       if (!this.hasConnectedDevice) {
         throw new Error(`The device has been disconnected. ${_.get(this.connectInfo, 'port')}`);
@@ -250,4 +254,4 @@ class Control extends AbstDeviceClient {
     }
   }
 }
-module.exports = Control;
+module.exports = PcsController;

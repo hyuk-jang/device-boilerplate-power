@@ -11,6 +11,14 @@ class Model {
    */
   constructor(controller) {
     this.controller = controller;
+    // this.deviceData = BaseModel.Inverter.BASE_MODEL;
+    this.initModel();
+  }
+
+  /**
+   * Data 초기화
+   */
+  initModel() {
     this.deviceData = BaseModel.Inverter.BASE_MODEL;
   }
 

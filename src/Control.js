@@ -1,16 +1,14 @@
 const _ = require('lodash');
-const cron = require('cron');
+const cron = require('node-cron');
 const Promise = require('bluebird');
+const moment = require('moment');
 
 const {BU, CU} = require('base-util-jh');
 const {BM} = require('base-model-jh');
 
-const moment = require('moment');
 const Model = require('./Model');
 
-// const PcsController = require('../PcsController');
-
-const PcsController = require('../PcsController/src/Control');
+const PcsController = require('../PcsController');
 
 class Control {
   /** @param {defaultManagerConfig} config */
@@ -47,18 +45,39 @@ class Control {
   }
 
   /**
+   * Passive Client를 수동으로 붙여줄 경우
+   * @param {string} mainUUID Site ID
+   * @param {*} passiveClient
+   * @return {boolean} 성공 유무
+   */
+  setPassiveClient(mainUUID, passiveClient) {
+    const fountIt = _.find(this.deviceControllerList, pcsController =>
+      _.isEqual(pcsController.siteUUID, mainUUID),
+    );
+
+    // 해당 지점이 없다면 실패
+    if (_.isEmpty(fountIt)) return false;
+    // client를 binding 처리
+    fountIt.bindingPassiveClient(mainUUID, passiveClient);
+    return true;
+  }
+
+  /**
    * 장치 컨트롤러 리스트 생성
    * @param {dbInfo=} dbInfo
-   * @param {string} mainUuid main UUID
+   * @param {string=} mainUUID main UUID
    */
-  async init(dbInfo, mainUuid) {
+  async init(dbInfo, mainUUID) {
     // DB 정보를 입력할 경우 해당 DB에 접속하여 정보를 취득
     if (dbInfo) {
       this.config.dbInfo = dbInfo;
       const biModule = new BM(dbInfo);
 
       const returnValue = [];
-      const deviceList = await biModule.getTable('v_pw_inverter_profile', {uuid: mainUuid});
+      const deviceList = await biModule.getTable(
+        'v_pw_inverter_profile',
+        _.isString(mainUUID) && {uuid: mainUUID},
+      );
       deviceList.forEach(element => {
         element.protocol_info = JSON.parse(_.get(element, 'protocol_info'));
         element.connect_info = JSON.parse(_.get(element, 'connect_info'));
@@ -154,14 +173,11 @@ class Control {
         this.cronScheduler.stop();
       }
       // 1분마다 요청
-      this.cronScheduler = new cron.CronJob({
-        cronTime: '0 */1 * * * *',
-        onTick: () => {
-          this.measureDate = moment();
-          this.discoveryRegularDevice();
-        },
-        start: true,
+      this.cronScheduler = cron.schedule('* * * * *', () => {
+        this.measureDate = moment();
+        this.discoveryRegularDevice();
       });
+      this.cronScheduler.start();
       return true;
     } catch (error) {
       throw error;
@@ -174,7 +190,7 @@ class Control {
    * @param {dcMessage} dcMessage 명령 수행 결과 데이터
    */
   notifyDeviceMessage(pcsController, dcMessage) {
-    BU.CLI('notifyDeviceMessage', dcMessage.msgCode);
+    // BU.CLI('notifyDeviceMessage', dcMessage.msgCode);
     const {
       COMMANDSET_EXECUTION_TERMINATE,
       COMMANDSET_DELETE,
@@ -197,7 +213,7 @@ class Control {
    */
   discoveryRegularDevice(momentDate) {
     momentDate = _.isNil(momentDate) ? moment() : momentDate;
-    BU.CLI('discoveryRegularDevice');
+    // BU.CLI('discoveryRegularDevice');
 
     // 응답을 기다리는 장치 초기화
     /** @type {deviceCommandContainerInfo} */
@@ -206,10 +222,10 @@ class Control {
       deviceCommandList: [],
     };
 
-    // 순회 명령을 완료하는데까지 타임아웃 시간을 5초로 설정
+    // 순회 명령을 완료하는데까지 타임아웃 시간을 30초로 설정
     deviceCommandContainer.timeoutTimer = new CU.Timer(
       () => this.model.endDeviceCommand(deviceCommandContainer),
-      1000 * 5,
+      1000 * 30,
     );
 
     // 명령 목록에 추가

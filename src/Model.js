@@ -1,8 +1,9 @@
 const _ = require('lodash');
+
 const {BU} = require('base-util-jh');
-const AbstDeviceClientModel = require('../../device-client-model-jh');
 
 const powerFormat = require('../config/powerFormat');
+const AbstDeviceClientModel = require('../../device-client-model-jh');
 
 class Model {
   /**
@@ -139,7 +140,7 @@ class Model {
 
       return true;
     } catch (error) {
-      BU.CLI(error);
+      // BU.CLI(error);
       BU.errorLog('updateDeviceCategory', _.get(error, 'message'), error);
     }
   }
