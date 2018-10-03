@@ -233,12 +233,10 @@ class Control {
 
     // 정의된 장치 컨트롤러 목록만큼 순회하면서 명령 객체 생성
     this.deviceControllerList.forEach(deviceController => {
-      // 기본 계측 명령 생성
-      const commandInfoList = deviceController.converter.generationCommand(
-        deviceController.baseModel.device.DEFAULT.COMMAND.STATUS,
-      );
       // 고유 명령 객체 생성 및 명령 수행 요청
-      const commandSet = deviceController.orderOperation(commandInfoList);
+      const commandSet = deviceController.orderOperation({
+        key: deviceController.baseModel.device.DEFAULT.KEY,
+      });
       /** @type {deviceCommandEleInfo} */
       const deviceCommandEle = {
         category: deviceController.category,

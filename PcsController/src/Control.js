@@ -65,7 +65,7 @@ class PcsController extends AbstDeviceClient {
     try {
       // 프로토콜 컨버터 바인딩
       this.converter.setProtocolConverter();
-      
+
       // DCC 초기화 시작
       if (_.isEmpty(this.config.deviceInfo.connect_info)) {
         // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
@@ -129,10 +129,10 @@ class PcsController extends AbstDeviceClient {
 
   /**
    * PCS에 명령 수행 요청
-   * @param {commandInfo[]} commandInfoList
+   * @param {generationInfo} generationInfo
    * @return {commandSet} 고유 명령 집합
    */
-  orderOperation(commandInfoList) {
+  orderOperation(generationInfo) {
     // BU.CLI(commandInfoList);
     // 계측 명령을 수신하면 Model Data 초기화
     this.model.initModel();
@@ -141,9 +141,11 @@ class PcsController extends AbstDeviceClient {
         throw new Error(`The device has been disconnected. ${_.get(this.connectInfo, 'port')}`);
       }
 
+      const cmdList = this.converter.generationCommand(generationInfo);
+
       // 생성된 고유 명령 집합
       const commandSet = this.generationManualCommand({
-        cmdList: commandInfoList,
+        cmdList,
         commandId: this.id,
       });
 

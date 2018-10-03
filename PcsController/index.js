@@ -14,11 +14,13 @@ if (require !== undefined && require.main === module) {
     .then(hasConnected => {
       // console.trace(hasConnected);
       // BU.CLI(controller.baseModel.device.DEFAULT.COMMAND.STATUS);
-      const command = controller.converter.generationCommand(
-        controller.baseModel.device.DEFAULT.COMMAND.STATUS,
-      );
+      const command = controller.converter.generationCommand({
+        key: controller.baseModel.device.DEFAULT.KEY,
+      });
       BU.CLIN(command);
-      controller.orderOperation(command);
+      controller.orderOperation({
+        key: controller.baseModel.device.DEFAULT.KEY,
+      });
     })
     .catch(err => {
       BU.CLI(err);
