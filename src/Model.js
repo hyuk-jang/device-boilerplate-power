@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const {BU} = require('base-util-jh');
+const { BU } = require('base-util-jh');
 
 const powerFormat = require('../config/powerFormat');
 const AbstDeviceClientModel = require('../../device-client-model-jh');
@@ -55,7 +55,7 @@ class Model {
       _.forEach(deviceCommandContainerInfo.deviceCommandList, deviceCommandEleInfo => {
         // commandSet 일치 여부 판단
         if (_.isEqual(deviceCommandEleInfo.commandSet, dcMessage.commandSet)) {
-          const {category} = deviceCommandEleInfo;
+          const { category } = deviceCommandEleInfo;
           hasFind = true;
 
           // 이미 완료된 목록이 재차 요청된 거라면 무시(시스템 오류 예방)

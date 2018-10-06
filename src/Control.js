@@ -3,8 +3,8 @@ const cron = require('node-cron');
 const Promise = require('bluebird');
 const moment = require('moment');
 
-const {BU, CU} = require('base-util-jh');
-const {BM} = require('base-model-jh');
+const { BU, CU } = require('base-util-jh');
+const { BM } = require('base-model-jh');
 
 const Model = require('./Model');
 
@@ -76,7 +76,7 @@ class Control {
       const returnValue = [];
       const deviceList = await biModule.getTable(
         'v_pw_inverter_profile',
-        _.isString(mainUUID) && {uuid: mainUUID},
+        _.isString(mainUUID) && { uuid: mainUUID },
       );
       deviceList.forEach(element => {
         element.protocol_info = JSON.parse(_.get(element, 'protocol_info'));

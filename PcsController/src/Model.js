@@ -1,9 +1,9 @@
 const _ = require('lodash');
 
-const {BU, CU} = require('base-util-jh');
+const { BU, CU } = require('base-util-jh');
 
 // const {BaseModel} = require('device-protocol-converter-jh');
-const {BaseModel} = require('../../../device-protocol-converter-jh');
+const { BaseModel } = require('../../../device-protocol-converter-jh');
 
 class Model {
   /**
