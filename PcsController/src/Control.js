@@ -15,12 +15,16 @@ const mainConfig = require('./config');
 
 class PcsController extends AbstDeviceClient {
   /** @param {defaultControlConfig} config */
-  constructor(config) {
+  constructor(config = mainConfig) {
     super();
 
-    this.config = config || mainConfig;
-    this.connectInfo = this.config.deviceInfo.connect_info;
-    this.protocolInfo = this.config.deviceInfo.protocol_info;
+    this.config = config;
+    /** @type {deviceInfo} Controller 객체의 생성 정보를 담고 있는 설정 정보 */
+    this.deviceInfo = this.config.deviceInfo;
+    /** @type {connect_info} DCC를 생성하기 위한 설정 정보 */
+    this.connectInfo = this.deviceInfo.connect_info;
+    /** @type {protocol_info} DPC를 생성하기 위한 설정 정보  */
+    this.protocolInfo = this.deviceInfo.protocol_info;
 
     this.converter = new AbstConverter(this.protocolInfo);
     // 상위 객체, 외부에서 baseModel을 이용하여 명령 요청
@@ -39,7 +43,7 @@ class PcsController extends AbstDeviceClient {
    * @return {string} Device Controller를 대표하는 ID
    */
   get id() {
-    return this.config.deviceInfo.target_id;
+    return this.deviceInfo.target_id;
   }
 
   /**
@@ -47,7 +51,7 @@ class PcsController extends AbstDeviceClient {
    * @return {string}
    */
   get category() {
-    return this.config.deviceInfo.target_category;
+    return this.deviceInfo.target_category;
   }
 
   /**
@@ -63,23 +67,24 @@ class PcsController extends AbstDeviceClient {
     }
 
     try {
+      const { CONNECT, DISCONNECT } = this.definedControlEvent;
       // 프로토콜 컨버터 바인딩
       this.converter.setProtocolConverter();
 
       // DCC 초기화 시작
-      if (_.isEmpty(this.config.deviceInfo.connect_info)) {
+      if (_.isEmpty(this.deviceInfo.connect_info)) {
         // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
         if (_.isString(siteUUID)) {
           // 해당 사이트 고유 ID
           this.siteUUID = siteUUID;
-          this.setPassiveClient(this.config.deviceInfo, siteUUID);
+          this.setPassiveClient(this.deviceInfo, siteUUID);
           return this;
         }
         throw new ReferenceError('Initialization failed.');
       }
 
       // 접속 경로가 존재시 선언 및 자동 접속을 수행
-      this.setDeviceClient(this.config.deviceInfo);
+      this.setDeviceClient(this.deviceInfo);
 
       // 만약 장치가 접속된 상태라면
       if (this.hasConnectedDevice) {
@@ -87,11 +92,7 @@ class PcsController extends AbstDeviceClient {
       }
 
       // 장치 접속 결과를 기다림
-      await eventToPromise.multi(
-        this,
-        [this.definedControlEvent.CONNECT],
-        [this.definedControlEvent.DISCONNECT],
-      );
+      await eventToPromise.multi(this, [CONNECT], [DISCONNECT]);
       // Controller 반환
       return this;
     } catch (error) {
@@ -117,8 +118,8 @@ class PcsController extends AbstDeviceClient {
    */
   getDeviceOperationInfo() {
     return {
-      id: this.config.deviceInfo.target_id,
-      config: this.config.deviceInfo,
+      id: this.id,
+      config: this.deviceInfo,
       data: this.model.deviceData,
       // systemErrorList: [{code: 'new Code2222', msg: '에러 테스트 메시지22', occur_date: new Date() }],
       systemErrorList: this.systemErrorList,
@@ -171,12 +172,14 @@ class PcsController extends AbstDeviceClient {
   updatedDcEventOnDevice(dcEvent) {
     super.updatedDcEventOnDevice(dcEvent);
 
+    const { CONNECT, DISCONNECT } = this.definedControlEvent;
+
     switch (dcEvent.eventName) {
-      case this.definedControlEvent.CONNECT:
-        this.emit(this.definedControlEvent.CONNECT);
+      case CONNECT:
+        this.emit(CONNECT);
         break;
-      case this.definedControlEvent.DISCONNECT:
-        this.emit(this.definedControlEvent.DISCONNECT);
+      case DISCONNECT:
+        this.emit(DISCONNECT);
         break;
       default:
         break;
@@ -198,9 +201,11 @@ class PcsController extends AbstDeviceClient {
   onDcError(dcError) {
     super.onDcError(dcError);
 
+    const { NEXT } = this.definedCommanderResponse;
+
     // Error가 발생하면 추적 중인 데이터는 폐기 (config.deviceInfo.protocol_info.protocolOptionInfo.hasTrackingData = true 일 경우 추적하기 때문에 Data를 계속 적재하는 것을 방지함)
     this.converter.resetTrackingDataBuffer();
-    this.requestTakeAction(this.definedCommanderResponse.NEXT);
+    this.requestTakeAction(NEXT);
     // Observer가 해당 메소드를 가지고 있다면 전송
     _.forEach(this.observerList, observer => {
       if (_.get(observer, 'notifyDeviceError')) {
@@ -231,24 +236,24 @@ class PcsController extends AbstDeviceClient {
   onDcData(dcData) {
     // super.onDcData(dcData);
     try {
-      // BU.CLI('data', dcData.data.toString());
-      const parsedData = this.converter.parsingUpdateData(dcData);
+      const { DONE, ERROR, RETRY } = this.definedCommanderResponse;
+      const { eventCode, data } = this.converter.parsingUpdateData(dcData);
 
       // BU.CLI(parsedData);
       // 만약 파싱 에러가 발생한다면 명령 재 요청
-      if (parsedData.eventCode === this.definedCommanderResponse.ERROR) {
-        BU.errorLog('inverter', 'parsingError', parsedData);
-        // return this.requestTakeAction(this.definedCommanderResponse.RETRY);
-        return this.requestTakeAction(this.definedCommanderResponse.RETRY);
+      if (eventCode === ERROR) {
+        BU.errorLog('inverter', 'parsingError', eventCode);
+        // return this.requestTakeAction(RETRY);
+        return this.requestTakeAction(RETRY);
       }
 
-      if (parsedData.eventCode === this.definedCommanderResponse.DONE) {
-        this.model.onData(parsedData.data);
+      if (eventCode === DONE) {
+        this.model.onData(data);
       }
 
       // Device Client로 해당 이벤트 Code를 보냄
       // BU.CLIN(this.getDeviceOperationInfo().data);
-      return this.requestTakeAction(parsedData.eventCode);
+      return this.requestTakeAction(eventCode);
     } catch (error) {
       BU.CLI(error);
       BU.logFile(error);

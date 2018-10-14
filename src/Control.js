@@ -164,7 +164,7 @@ class Control {
   /**
    * 하부 장치 조회 스케줄러 동작
    */
-  runCronDiscoveryRegularDevice() {
+  runDeviceInquiryScheduler() {
     // this.measureDate = moment();
     // this.measureRegularDevice();
     try {
@@ -175,7 +175,7 @@ class Control {
       // 1분마다 요청
       this.cronScheduler = cron.schedule('* * * * *', () => {
         this.measureDate = moment();
-        this.discoveryRegularDevice();
+        this.inquiryAllDeviceStatus();
       });
       this.cronScheduler.start();
       return true;
@@ -211,10 +211,8 @@ class Control {
    * 정기적인 장치 리스트 계측 탐색
    * @param {moment.Moment} momentDate
    */
-  discoveryRegularDevice(momentDate) {
-    momentDate = _.isNil(momentDate) ? moment() : momentDate;
+  inquiryAllDeviceStatus(momentDate = moment()) {
     // BU.CLI('discoveryRegularDevice');
-
     // 응답을 기다리는 장치 초기화
     /** @type {deviceCommandContainerInfo} */
     const deviceCommandContainer = {

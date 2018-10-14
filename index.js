@@ -14,7 +14,7 @@ if (require !== undefined && require.main === module) {
   controller
     .init(mainConfig.current.dbInfo, mainConfig.current.uuid)
     .then(pcsControllerList => {
-      controller.runCronDiscoveryRegularDevice();
+      controller.runDeviceInquiryScheduler();
       // controller.discoveryRegularDevice();
     })
     .catch(err => {
