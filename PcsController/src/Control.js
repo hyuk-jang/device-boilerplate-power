@@ -3,7 +3,6 @@ const eventToPromise = require('event-to-promise');
 
 const { BU } = require('base-util-jh');
 
-const EchoServer = require('../../../device-echo-server-jh');
 // const AbstDeviceClient = require('device-client-controller-jh');
 const AbstDeviceClient = require('../../../device-client-controller-jh');
 
@@ -11,11 +10,10 @@ const AbstDeviceClient = require('../../../device-client-controller-jh');
 const { AbstConverter, BaseModel } = require('../../../device-protocol-converter-jh');
 
 const Model = require('./Model');
-const mainConfig = require('./config');
 
 class PcsController extends AbstDeviceClient {
   /** @param {defaultControlConfig} config */
-  constructor(config = mainConfig) {
+  constructor(config) {
     super();
 
     this.config = config;
@@ -60,19 +58,14 @@ class PcsController extends AbstDeviceClient {
    * @return {Promise.<PcsController>} 생성된 현 객체 반환
    */
   async init(siteUUID) {
-    /** 개발 버젼일 경우 Echo Server 구동 */
-    if (this.config.hasDev && _.get(this, 'connectInfo.port')) {
-      const echoServer = new EchoServer(this.connectInfo.port);
-      echoServer.attachDevice(this.protocolInfo);
-    }
-
     try {
       const { CONNECT, DISCONNECT } = this.definedControlEvent;
       // 프로토콜 컨버터 바인딩
       this.converter.setProtocolConverter();
 
       // DCC 초기화 시작
-      if (_.isEmpty(this.deviceInfo.connect_info)) {
+      // connectInfo가 없거나 수동 Client를 사용할 경우
+      if (_.isEmpty(this.connectInfo) || this.connectInfo.hasPassive) {
         // 장치 접속 경로가 존재하지 않을 경우 수동 클라이언트 설정
         if (_.isString(siteUUID)) {
           // 해당 사이트 고유 ID
@@ -134,8 +127,10 @@ class PcsController extends AbstDeviceClient {
    * @return {commandSet} 고유 명령 집합
    */
   orderOperation(generationInfo) {
-    // BU.CLI(commandInfoList);
-    // 계측 명령을 수신하면 Model Data 초기화
+    if (process.env.LOG_PC_ORDER === '1') {
+      BU.CLI('generationInfo', generationInfo);
+    }
+
     this.model.initModel();
     try {
       if (!this.hasConnectedDevice) {
@@ -150,7 +145,9 @@ class PcsController extends AbstDeviceClient {
         commandId: this.id,
       });
 
-      // BU.CLIN(commandSet);
+      if (process.env.LOG_PC_ORDER === '1') {
+        BU.CLIN(commandSet);
+      }
 
       // 장치 매니저에 명령 실행 요청
       this.executeCommand(commandSet);
@@ -170,7 +167,9 @@ class PcsController extends AbstDeviceClient {
    * dcDisconnect --> 장치 연결 해제
    */
   updatedDcEventOnDevice(dcEvent) {
-    super.updatedDcEventOnDevice(dcEvent);
+    if (process.env.LOG_PC_EVENT === '1') {
+      super.updatedDcEventOnDevice(dcEvent);
+    }
 
     const { CONNECT, DISCONNECT } = this.definedControlEvent;
 
@@ -199,7 +198,9 @@ class PcsController extends AbstDeviceClient {
    * @param {dcError} dcError 현재 장비에서 실행되고 있는 명령 객체
    */
   onDcError(dcError) {
-    super.onDcError(dcError);
+    if (process.env.LOG_PC_ERROR === '1') {
+      super.onDcError(dcError);
+    }
 
     const { NEXT } = this.definedCommanderResponse;
 
@@ -234,12 +235,16 @@ class PcsController extends AbstDeviceClient {
    * @param {dcData} dcData 현재 장비에서 실행되고 있는 명령 객체
    */
   onDcData(dcData) {
-    // super.onDcData(dcData);
+    if (process.env.LOG_PC_ON_DATA === '1') {
+      super.onDcData(dcData);
+    }
     try {
       const { DONE, ERROR, RETRY } = this.definedCommanderResponse;
       const { eventCode, data } = this.converter.parsingUpdateData(dcData);
 
-      // BU.CLI(parsedData);
+      if (process.env.LOG_PC_ON_DATA === '1') {
+        BU.CLI(data);
+      }
       // 만약 파싱 에러가 발생한다면 명령 재 요청
       if (eventCode === ERROR) {
         BU.errorLog('inverter', 'parsingError', eventCode);
@@ -252,10 +257,12 @@ class PcsController extends AbstDeviceClient {
       }
 
       // Device Client로 해당 이벤트 Code를 보냄
-      // BU.CLIN(this.getDeviceOperationInfo().data);
+      if (process.env.LOG_PC_RENEWAL_DATA === '1') {
+        BU.CLIN(this.getDeviceOperationInfo().data);
+      }
+
       return this.requestTakeAction(eventCode);
     } catch (error) {
-      BU.CLI(error);
       BU.logFile(error);
       throw error;
     }

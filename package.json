@@ -34,8 +34,8 @@
     "base-model-jh": "^1.2.1",
     "base-util-jh": "^1.1.13",
     "bluebird": "^3.5.1",
+    "cron": "^1.4.1",
     "lodash": "^4.17.10",
-    "moment": "^2.22.2",
-    "node-cron": "^2.0.1"
+    "moment": "^2.22.2"
   }
 }

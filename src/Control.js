@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const cron = require('node-cron');
+const cron = require('cron');
 const Promise = require('bluebird');
 const moment = require('moment');
 
@@ -79,8 +79,13 @@ class Control {
         _.isString(mainUUID) && { uuid: mainUUID },
       );
       deviceList.forEach(element => {
-        element.protocol_info = JSON.parse(_.get(element, 'protocol_info'));
-        element.connect_info = JSON.parse(_.get(element, 'connect_info'));
+        // 환경 정보가 strJson이라면 변환하여 저장
+        BU.IsJsonString(element.connect_info) &&
+          _.set(element, 'connect_info', JSON.parse(element.connect_info));
+
+        BU.IsJsonString(element.protocol_info) &&
+          _.set(element, 'protocol_info', JSON.parse(element.protocol_info));
+
         element.logOption = {
           hasCommanderResponse: true,
           hasDcError: true,
@@ -94,15 +99,15 @@ class Control {
           hasOneAndOne: false,
           hasReconnect: true,
         };
-        // element.protocol_info = _.replace() _.get(element, 'protocol_info') ;
+
         const addObj = {
-          hasDev: false,
           deviceInfo: element,
         };
 
         returnValue.push(addObj);
       });
 
+      // 참조할 인버터 재정의
       this.config.deviceControllerList = returnValue;
     }
 
@@ -172,12 +177,27 @@ class Control {
         // BU.CLI('Stop')
         this.cronScheduler.stop();
       }
+
       // 1분마다 요청
-      this.cronScheduler = cron.schedule('* * * * *', () => {
-        this.measureDate = moment();
-        this.inquiryAllDeviceStatus();
-      });
-      this.cronScheduler.start();
+      this.cronScheduler = new cron.CronJob(
+        `*/${this.config.inquiryIntervalSecond} * * * * *`,
+        () => {
+          this.inquiryAllDeviceStatus(moment())
+            .then()
+            .catch(err => {
+              BU.errorLog('command', 'runDeviceInquiryScheduler', err);
+            });
+        },
+        null,
+        true,
+      );
+
+      // // 1분마다 요청
+      // this.cronScheduler = cron.schedule('* * * * *', () => {
+      //   this.measureDate = moment();
+      //   this.inquiryAllDeviceStatus();
+      // });
+      // this.cronScheduler.start();
       return true;
     } catch (error) {
       throw error;
@@ -212,6 +232,9 @@ class Control {
    * @param {moment.Moment} momentDate
    */
   inquiryAllDeviceStatus(momentDate = moment()) {
+    if (process.env.LOG_DBP_INQUIRY_START === '1') {
+      BU.CLI('Start DBP inquiryAllDeviceStatus');
+    }
     // BU.CLI('discoveryRegularDevice');
     // 응답을 기다리는 장치 초기화
     /** @type {deviceCommandContainerInfo} */

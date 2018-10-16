@@ -61,7 +61,7 @@ class Model {
           // 이미 완료된 목록이 재차 요청된 거라면 무시(시스템 오류 예방)
           if (deviceCommandEleInfo.hasComplete) return false;
 
-          BU.CLI('commandId', dcMessage.commandSet.commandId);
+          // BU.CLI('commandId', dcMessage.commandSet.commandId);
           // 완료된 목록으로 처리
           deviceCommandEleInfo.hasComplete = true;
 
@@ -125,18 +125,24 @@ class Model {
    * @param {string} category Update 처리 할 카테고리
    */
   async updateDeviceCategory(momentDate, category) {
-    BU.CLIS(category, momentDate);
+    // BU.CLIS(category, momentDate);
     try {
       // Storage에 저장되어 있는 데이터(장치 데이터,)
-      BU.CLI('updateDeviceCategory');
+      BU.CLI('updateDeviceCategory', category);
       const convertDataList = await this.deviceClientModel.refineTheDataToSaveDB(
         category,
         momentDate.toDate(),
       );
-      BU.CLIN(convertDataList, 3);
 
-      const resultSaveToDB = await this.deviceClientModel.saveDataToDB(category);
-      BU.CLIN(resultSaveToDB);
+      if (process.env.LOG_DBP_UPDATED_DATA === '1') {
+        BU.CLIN(convertDataList, 3);
+      }
+
+      if (process.env.DBP_SAVE_PCS !== '0') {
+        const resultSaveToDB = await this.deviceClientModel.saveDataToDB(category);
+
+        process.env.LOG_DBP_SAVE_DATA_RESULT !== 0 && BU.CLIN(resultSaveToDB);
+      }
 
       return true;
     } catch (error) {
