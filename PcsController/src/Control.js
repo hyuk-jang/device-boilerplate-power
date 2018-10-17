@@ -12,13 +12,13 @@ const { AbstConverter, BaseModel } = require('../../../device-protocol-converter
 const Model = require('./Model');
 
 class PcsController extends AbstDeviceClient {
-  /** @param {defaultControlConfig} config */
+  /** @param {deviceInfo} config */
   constructor(config) {
     super();
 
     this.config = config;
     /** @type {deviceInfo} Controller 객체의 생성 정보를 담고 있는 설정 정보 */
-    this.deviceInfo = this.config.deviceInfo;
+    this.deviceInfo = this.config;
     /** @type {connect_info} DCC를 생성하기 위한 설정 정보 */
     this.connectInfo = this.deviceInfo.connect_info;
     /** @type {protocol_info} DPC를 생성하기 위한 설정 정보  */

@@ -30,15 +30,15 @@ class Control {
 
   /**
    * 접속 포트 변경
-   * @param {string=} targetId deviceController deviceInfo target_id
+   * @param {string=} targetId deviceController target_id
    * @param {string} comName 포트를 바꾸고자 할 경우
    */
   setDbConnectPort(targetId, comName) {
     // 포트 변경
-    this.config.deviceControllerList.forEach(deviceControllerInfo => {
+    this.config.deviceConfigList.forEach(deviceControllerInfo => {
       // 포트를 지정하지 않을 경우 전체 변경
-      if (_.isNil(targetId) || deviceControllerInfo.deviceInfo.target_id === targetId) {
-        _.set(deviceControllerInfo, 'deviceInfo.connect_info.port', comName);
+      if (_.isNil(targetId) || deviceControllerInfo.target_id === targetId) {
+        _.set(deviceControllerInfo, 'connect_info.port', comName);
       }
     });
     return true;
@@ -74,10 +74,13 @@ class Control {
       const biModule = new BM(dbInfo);
 
       const returnValue = [];
+      /** @type {V_PW_INVERTER_PROFILE} */
       const deviceList = await biModule.getTable(
         'v_pw_inverter_profile',
         _.isString(mainUUID) && { uuid: mainUUID },
       );
+      BU.CLI(deviceList.length);
+
       deviceList.forEach(element => {
         // 환경 정보가 strJson이라면 변환하여 저장
         BU.IsJsonString(element.connect_info) &&
@@ -100,31 +103,24 @@ class Control {
           hasReconnect: true,
         };
 
-        const addObj = {
-          deviceInfo: element,
-        };
-
-        returnValue.push(addObj);
+        returnValue.push(element);
       });
 
       // 참조할 인버터 재정의
-      this.config.deviceControllerList = returnValue;
+      this.config.deviceConfigList = returnValue;
     }
 
     try {
       // 하부 PCS 순회
-      const resultInitPcsList = await Promise.map(
-        this.config.deviceControllerList,
-        deviceControllerInfo => {
-          const controller = new PcsController(deviceControllerInfo);
-          // 컨트롤러에 현 객체 Observer 등록
-          controller.attach(this);
-          return controller.init();
-        },
-      );
+      const deviceControllerList = await Promise.map(this.config.deviceConfigList, deviceInfo => {
+        const controller = new PcsController(deviceInfo);
+        // 컨트롤러에 현 객체 Observer 등록
+        controller.attach(this);
+        return controller.init(_.get(deviceInfo, 'uuid'));
+      });
 
       // 하부 PCS 객체 리스트 정의
-      this.deviceControllerList = resultInitPcsList;
+      this.deviceControllerList = deviceControllerList;
 
       // 모델 생성 및 정의
       this.model = new Model(this);
@@ -241,19 +237,14 @@ class Control {
     const deviceCommandContainer = {
       momentDate,
       deviceCommandList: [],
+      timeoutTimer: null,
     };
-
-    // 순회 명령을 완료하는데까지 타임아웃 시간을 30초로 설정
-    deviceCommandContainer.timeoutTimer = new CU.Timer(
-      () => this.model.endDeviceCommand(deviceCommandContainer),
-      1000 * 30,
-    );
-
-    // 명령 목록에 추가
-    this.deviceCommandContainerList.push(deviceCommandContainer);
 
     // 정의된 장치 컨트롤러 목록만큼 순회하면서 명령 객체 생성
     this.deviceControllerList.forEach(deviceController => {
+      // 장치와 접속이 수행되지 않았다면 명령 대상에서 제외
+      if (!deviceController.hasConnectedDevice) return false;
+
       // 고유 명령 객체 생성 및 명령 수행 요청
       const commandSet = deviceController.orderOperation({
         key: deviceController.baseModel.device.DEFAULT.KEY,
@@ -267,6 +258,21 @@ class Control {
 
       deviceCommandContainer.deviceCommandList.push(deviceCommandEle);
     });
+
+    // 장치와의 접속이 이루어지지 않을 경우 명령 전송하지 않음
+    if (deviceCommandContainer.deviceCommandList.length === 0) {
+      BU.CLI('PCS Empty Order inquiryAllDeviceStatus');
+      return false;
+    }
+
+    // 명령 목록에 추가
+    this.deviceCommandContainerList.push(deviceCommandContainer);
+
+    // 무한정 기다릴 순 없으니 실패 시 Error를 발생시킬 setTimer 등록
+    deviceCommandContainer.timeoutTimer = new CU.Timer(
+      () => this.model.endDeviceCommand(deviceCommandContainer),
+      1000 * this.config.inquiryWaitingSecond,
+    );
 
     // 모든 장치에 계측 명령 요청
     // this.deviceControllerList.forEach(deviceController => {

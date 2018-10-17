@@ -28,9 +28,9 @@ class Model {
     this.deviceClientModel.setHasSaveToDB(true);
 
     // Device Controller 목록 만큼 순회하면서 DCM 객체를 생성
-    this.controller.config.deviceControllerList.forEach(deviceControllerInfo => {
+    this.controller.config.deviceConfigList.forEach(deviceControllerInfo => {
       // DCM 에서 관리할 Category와 Storage ID 를 설정
-      this.deviceClientModel.setDevice(deviceControllerInfo.deviceInfo, {
+      this.deviceClientModel.setDevice(deviceControllerInfo, {
         idKey: 'target_id',
         deviceCategoryKey: 'target_category',
       });
@@ -135,7 +135,9 @@ class Model {
       );
 
       if (process.env.LOG_DBP_UPDATED_DATA === '1') {
-        BU.CLIN(convertDataList, 3);
+        BU.CLI('updateTroubleList', convertDataList.updateTroubleList);
+        BU.CLI('insertTroubleList', convertDataList.insertTroubleList);
+        BU.CLI('insertDataList', convertDataList.insertDataList);
       }
 
       if (process.env.DBP_SAVE_PCS !== '0') {

@@ -11,11 +11,12 @@ if (require !== undefined && require.main === module) {
   const mainConfig = require('./src/config');
   const controller = new Control(mainConfig);
 
+  BU.CLI(mainConfig.dbInfo);
   controller
-    .init(mainConfig.current.dbInfo, mainConfig.current.uuid)
+    .init(mainConfig.dbInfo, mainConfig.uuid)
     .then(pcsControllerList => {
-      controller.runDeviceInquiryScheduler();
-      // controller.discoveryRegularDevice();
+      // controller.runDeviceInquiryScheduler();
+      controller.inquiryAllDeviceStatus();
     })
     .catch(err => {
       BU.CLI(err);

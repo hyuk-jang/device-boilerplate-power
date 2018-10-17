@@ -154,3 +154,7 @@ module.exports = [
     },
   },
 ];
+
+
+
+// calculate: `${keyInfo.powerGridKw} / ${keyInfo.pvKw} * 100`,
