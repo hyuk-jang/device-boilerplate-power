@@ -15,8 +15,8 @@ if (require !== undefined && require.main === module) {
   controller
     .init(mainConfig.dbInfo, mainConfig.uuid)
     .then(pcsControllerList => {
-      // controller.runDeviceInquiryScheduler();
-      controller.inquiryAllDeviceStatus();
+      controller.runDeviceInquiryScheduler();
+      // controller.inquiryAllDeviceStatus();
     })
     .catch(err => {
       BU.CLI(err);

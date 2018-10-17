@@ -68,47 +68,51 @@ class Control {
    * @param {string=} mainUUID main UUID
    */
   async init(dbInfo, mainUUID) {
+    // BU.CLIS(dbInfo, mainUUID);
     // DB 정보를 입력할 경우 해당 DB에 접속하여 정보를 취득
     if (dbInfo) {
       this.config.dbInfo = dbInfo;
       const biModule = new BM(dbInfo);
 
-      const returnValue = [];
       /** @type {V_PW_INVERTER_PROFILE} */
       const deviceList = await biModule.getTable(
         'v_pw_inverter_profile',
         _.isString(mainUUID) && { uuid: mainUUID },
       );
-      BU.CLI(deviceList.length);
+      // BU.CLI(deviceList.length);
 
-      deviceList.forEach(element => {
-        // 환경 정보가 strJson이라면 변환하여 저장
-        BU.IsJsonString(element.connect_info) &&
-          _.set(element, 'connect_info', JSON.parse(element.connect_info));
-
-        BU.IsJsonString(element.protocol_info) &&
-          _.set(element, 'protocol_info', JSON.parse(element.protocol_info));
-
-        element.logOption = {
-          hasCommanderResponse: true,
-          hasDcError: true,
-          hasDcEvent: true,
-          hasReceiveData: true,
-          hasDcMessage: true,
-          hasTransferCommand: true,
-        };
-        element.controlInfo = {
-          hasErrorHandling: true,
-          hasOneAndOne: false,
-          hasReconnect: true,
-        };
-
-        returnValue.push(element);
-      });
-
-      // 참조할 인버터 재정의
-      this.config.deviceConfigList = returnValue;
+      this.config.deviceConfigList = deviceList;
     }
+
+    // map이 나와서 거슬림. 제거함
+    this.config.deviceConfigList = _.map(this.config.deviceConfigList, deviceConfig =>
+      _.omit(deviceConfig, ['map']),
+    );
+
+    // 참조할 인버터 재정의
+    this.config.deviceConfigList.forEach(element => {
+      // 환경 정보가 strJson이라면 변환하여 저장
+
+      BU.IsJsonString(element.connect_info) &&
+        _.set(element, 'connect_info', JSON.parse(element.connect_info));
+
+      BU.IsJsonString(element.protocol_info) &&
+        _.set(element, 'protocol_info', JSON.parse(element.protocol_info));
+
+      element.logOption = {
+        hasCommanderResponse: true,
+        hasDcError: true,
+        hasDcEvent: true,
+        hasReceiveData: true,
+        hasDcMessage: true,
+        hasTransferCommand: true,
+      };
+      element.controlInfo = {
+        hasErrorHandling: true,
+        hasOneAndOne: false,
+        hasReconnect: true,
+      };
+    });
 
     try {
       // 하부 PCS 순회
@@ -178,11 +182,7 @@ class Control {
       this.cronScheduler = new cron.CronJob(
         `*/${this.config.inquiryIntervalSecond} * * * * *`,
         () => {
-          this.inquiryAllDeviceStatus(moment())
-            .then()
-            .catch(err => {
-              BU.errorLog('command', 'runDeviceInquiryScheduler', err);
-            });
+          this.inquiryAllDeviceStatus(moment());
         },
         null,
         true,
