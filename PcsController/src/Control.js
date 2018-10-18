@@ -256,11 +256,6 @@ class PcsController extends AbstDeviceClient {
         this.model.onData(data);
       }
 
-      // Device Client로 해당 이벤트 Code를 보냄
-      if (process.env.LOG_PC_RENEWAL_DATA === '1') {
-        BU.CLIN(this.getDeviceOperationInfo().data);
-      }
-
       return this.requestTakeAction(eventCode);
     } catch (error) {
       BU.logFile(error);

@@ -45,7 +45,7 @@ class Model {
    * @param {dcMessage} dcMessage 명령 수행 결과 데이터
    */
   completedDeviceCommand(pcsController, dcMessage) {
-    BU.CLI('completedDeviceCommand');
+    // BU.CLI('completedDeviceCommand');
     // 조건을 만족할 경우 순회를 중지하기 위함
     let hasFind = false;
     // 생성된 명령 목록에서 해당 commandSet 일치 객체 추출
@@ -78,6 +78,8 @@ class Model {
 
           // 모든 명령을 수행할 경우에 업데이트 수행
           if (hasAllCompleted) {
+            clearTimeout(deviceCommandContainerInfo.timeoutTimer);
+            deviceCommandContainerInfo.timeoutTimer.complete = true;
             this.endDeviceCommand(deviceCommandContainerInfo);
           }
         }
@@ -91,15 +93,13 @@ class Model {
    */
   endDeviceCommand(deviceCommandContainerInfo) {
     BU.CLI('endDeviceCommand');
+    // 타이머를 해제
     const foundIndex = _.findIndex(this.deviceCommandContainerList, ele =>
       _.isEqual(ele, deviceCommandContainerInfo),
     );
-    // 타이머를 해제
-    deviceCommandContainerInfo.timeoutTimer.pause();
 
     // 해당 명령이 존재한다면
     if (foundIndex > -1) {
-      // 타임아웃 타이머 해제
       // 목록에서 삭제
       _.pullAt(this.deviceCommandContainerList, foundIndex);
 
@@ -141,10 +141,14 @@ class Model {
       }
 
       if (process.env.DBP_SAVE_PCS !== '0') {
-        const resultSaveToDB = await this.deviceClientModel.saveDataToDB(category);
-
-        process.env.LOG_DBP_SAVE_DATA_RESULT !== 0 && BU.CLIN(resultSaveToDB);
+        // FIXME: DB에 계측 데이터 전송. 데이터에 이상이 발생하여 입력하지 못 할 경우 산정하지 않음. 차후 필요시 구현 필요
+        await this.deviceClientModel.saveDataToDB(category);
       }
+
+      // DB에 입력을 했던 안했던 초기화 시킴
+      convertDataList.insertDataList = [];
+      convertDataList.insertTroubleList = [];
+      convertDataList.updateTroubleList = [];
 
       return true;
     } catch (error) {
@@ -159,7 +163,7 @@ module.exports = Model;
 /**
  * @typedef {Object} deviceCommandContainerInfo
  * @property {Moment} momentDate 명령 요청 시각
- * @property {Timer} timeoutTimer 정해진 시간안에 해당 명령의 응답 대기 인터벌.
+ * @property {setTimeout} timeoutTimer 정해진 시간안에 해당 명령의 응답 대기 인터벌.
  * @property {deviceCommandEleInfo[]} deviceCommandList 명령에 관련된 세부 사항
  */
 

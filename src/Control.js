@@ -216,6 +216,8 @@ class Control {
       // 명령이 종료되거나 삭제될 경우
       case COMMANDSET_EXECUTION_TERMINATE:
       case COMMANDSET_DELETE:
+        process.env.LOG_PC_RENEWAL_DATA === '1' &&
+          BU.CLI(pcsController.id, pcsController.getDeviceOperationInfo().data);
         this.model.completedDeviceCommand(pcsController, dcMessage);
         break;
       default:
@@ -264,15 +266,19 @@ class Control {
       BU.CLI('PCS Empty Order inquiryAllDeviceStatus');
       return false;
     }
+    // 무한정 기다릴 순 없으니 실패 시 Error를 발생시킬 setTimer 등록
+    deviceCommandContainer.timeoutTimer = setTimeout(() => {
+      deviceCommandContainer.timeoutTimer.complete = true;
+      this.model.endDeviceCommand(deviceCommandContainer);
+    }, 1000 * this.config.inquiryWaitingSecond);
 
     // 명령 목록에 추가
     this.deviceCommandContainerList.push(deviceCommandContainer);
 
-    // 무한정 기다릴 순 없으니 실패 시 Error를 발생시킬 setTimer 등록
-    deviceCommandContainer.timeoutTimer = new CU.Timer(
-      () => this.model.endDeviceCommand(deviceCommandContainer),
-      1000 * this.config.inquiryWaitingSecond,
-    );
+    // new CU.Timer(
+    //   () => this.model.endDeviceCommand(deviceCommandContainer),
+    //   1000 * this.config.inquiryWaitingSecond,
+    // );
 
     // 모든 장치에 계측 명령 요청
     // this.deviceControllerList.forEach(deviceController => {

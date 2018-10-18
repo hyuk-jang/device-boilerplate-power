@@ -16,7 +16,7 @@ const config = {
       target_name: '고정식',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"001"}',
       install_place: null,
@@ -33,7 +33,7 @@ const config = {
       target_name: '가변식',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"002"}',
       install_place: null,
@@ -50,7 +50,7 @@ const config = {
       target_name: '수평',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"003"}',
       install_place: null,
@@ -67,7 +67,7 @@ const config = {
       target_name: '외부',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"001"}',
       install_place: null,
@@ -84,7 +84,7 @@ const config = {
       target_name: '외부',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"001"}',
       install_place: null,
@@ -101,7 +101,7 @@ const config = {
       target_name: '1',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"001"}',
       install_place: null,
@@ -118,7 +118,7 @@ const config = {
       target_name: '2',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"002"}',
       install_place: null,
@@ -135,7 +135,7 @@ const config = {
       target_name: '3',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"003"}',
       install_place: null,
@@ -152,7 +152,7 @@ const config = {
       target_name: '일반 구조물',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"001"}',
       install_place: null,
@@ -169,7 +169,7 @@ const config = {
       target_name: '태양광 구조물',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"002"}',
       install_place: null,
@@ -186,7 +186,7 @@ const config = {
       target_name: '외부',
       target_category: 'inverter',
       connect_info:
-        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":true}',
+        '{"type":"socket","subType":"","host":"localhost","port":9000,"hasPassive":false}',
       protocol_info:
         '{"mainCategory":"Inverter","subCategory":"das_1.3","wrapperCategory":"default","deviceId":"003"}',
       install_place: null,
