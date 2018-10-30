@@ -263,7 +263,7 @@ class Control {
 
     // 장치와의 접속이 이루어지지 않을 경우 명령 전송하지 않음
     if (deviceCommandContainer.deviceCommandList.length === 0) {
-      BU.CLI('PCS Empty Order inquiryAllDeviceStatus');
+      // BU.CLI('PCS Empty Order inquiryAllDeviceStatus');
       return false;
     }
     // 무한정 기다릴 순 없으니 실패 시 Error를 발생시킬 setTimer 등록

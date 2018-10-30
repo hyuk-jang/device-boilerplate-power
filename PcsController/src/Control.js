@@ -128,7 +128,7 @@ class PcsController extends AbstDeviceClient {
    */
   orderOperation(generationInfo) {
     if (process.env.LOG_PC_ORDER === '1') {
-      BU.CLI('generationInfo', generationInfo);
+      BU.CLI(`generationInfo Id: ${this.id}`, generationInfo);
     }
 
     this.model.initModel();
@@ -145,9 +145,9 @@ class PcsController extends AbstDeviceClient {
         commandId: this.id,
       });
 
-      if (process.env.LOG_PC_ORDER === '1') {
-        BU.CLIN(commandSet);
-      }
+      // if (process.env.LOG_PC_ORDER === '1') {
+      //   BU.CLIN(commandSet);
+      // }
 
       // 장치 매니저에 명령 실행 요청
       this.executeCommand(commandSet);

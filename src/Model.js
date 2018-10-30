@@ -92,7 +92,7 @@ class Model {
    * @param {deviceCommandContainerInfo} deviceCommandContainerInfo
    */
   endDeviceCommand(deviceCommandContainerInfo) {
-    BU.CLI('endDeviceCommand');
+    // BU.CLI('endDeviceCommand');
     // 타이머를 해제
     const foundIndex = _.findIndex(this.deviceCommandContainerList, ele =>
       _.isEqual(ele, deviceCommandContainerInfo),
@@ -128,7 +128,7 @@ class Model {
     // BU.CLIS(category, momentDate);
     try {
       // Storage에 저장되어 있는 데이터(장치 데이터,)
-      BU.CLI('updateDeviceCategory', category);
+      // BU.CLI('updateDeviceCategory', category);
       const convertDataList = await this.deviceClientModel.refineTheDataToSaveDB(
         category,
         momentDate.toDate(),
