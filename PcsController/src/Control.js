@@ -239,17 +239,16 @@ class PcsController extends AbstDeviceClient {
       super.onDcData(dcData);
     }
     try {
-      const { DONE, ERROR, RETRY } = this.definedCommanderResponse;
+      const { DONE, ERROR, WAIT } = this.definedCommanderResponse;
       const { eventCode, data } = this.converter.parsingUpdateData(dcData);
 
       if (process.env.LOG_PC_ON_DATA === '1') {
         BU.CLI(data);
       }
-      // 만약 파싱 에러가 발생한다면 명령 재 요청
+      // Retry 시도 시 다중 명령 요청 및 수신이 이루어 지므로 Retry 하지 않음.
       if (eventCode === ERROR) {
         BU.errorLog('inverter', 'parsingError', eventCode);
-        // return this.requestTakeAction(RETRY);
-        return this.requestTakeAction(RETRY);
+        return this.requestTakeAction(WAIT);
       }
 
       if (eventCode === DONE) {
