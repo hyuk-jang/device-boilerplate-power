@@ -19,7 +19,7 @@ const mainConfig = {
   protocol_info: {
     mainCategory: 'Inverter',
     subCategory: 'das_1.3',
-    // wrapperCategory: 'default',
+    wrapperCategory: 'default',
     deviceId: '001',
     protocolOptionInfo: {
       hasTrackingData: true,

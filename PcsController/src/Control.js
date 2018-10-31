@@ -221,6 +221,19 @@ class PcsController extends AbstDeviceClient {
    * @param {dcMessage} dcMessage
    */
   onDcMessage(dcMessage) {
+    const { COMMANDSET_EXECUTION_TERMINATE, COMMANDSET_DELETE } = this.definedCommandSetMessage;
+
+    switch (dcMessage.msgCode) {
+      // 명령이 종료되거나 삭제될 경우
+      case COMMANDSET_EXECUTION_TERMINATE:
+      case COMMANDSET_DELETE:
+        process.env.LOG_PC_RENEWAL_DATA === '1' &&
+          BU.CLI(this.id, this.getDeviceOperationInfo().data);
+        break;
+      default:
+        break;
+    }
+
     // Observer가 해당 메소드를 가지고 있다면 전송
     this.observerList.forEach(observer => {
       if (_.get(observer, 'notifyDeviceMessage')) {

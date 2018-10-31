@@ -216,8 +216,6 @@ class Control {
       // 명령이 종료되거나 삭제될 경우
       case COMMANDSET_EXECUTION_TERMINATE:
       case COMMANDSET_DELETE:
-        process.env.LOG_PC_RENEWAL_DATA === '1' &&
-          BU.CLI(pcsController.id, pcsController.getDeviceOperationInfo().data);
         this.model.completedDeviceCommand(pcsController, dcMessage);
         break;
       default:
