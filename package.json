@@ -15,7 +15,7 @@
   "author": "j.hyuk",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^10.12.0",
+    "@types/node": "^10.12.1",
     "chai": "^4.2.0",
     "docdash": "^1.0.0",
     "dotenv": "^6.1.0",
@@ -31,10 +31,10 @@
     "prettier": "^1.14.3"
   },
   "dependencies": {
-    "base-model-jh": "^1.2.3",
-    "base-util-jh": "^1.1.16",
+    "base-model-jh": "^1.2.4",
+    "base-util-jh": "^1.1.18",
     "bluebird": "^3.5.2",
-    "cron": "^1.4.1",
+    "cron": "^1.5.0",
     "lodash": "^4.17.11",
     "moment": "^2.22.2"
   }
