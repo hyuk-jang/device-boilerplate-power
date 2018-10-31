@@ -47,12 +47,12 @@ module.exports = [
       matchingList: [
         {
           fromKey: keyInfo.pvAmp,
-          toKey: 'pv_v',
+          toKey: 'pv_a',
           toFixed: 1,
         },
         {
           fromKey: keyInfo.pvVol,
-          toKey: 'pv_a',
+          toKey: 'pv_v',
           toFixed: 1,
         },
         {
