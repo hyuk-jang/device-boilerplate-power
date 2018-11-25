@@ -21,6 +21,10 @@ class Model {
     this.troubleList = [];
 
     this.init();
+
+    // 정기 조회 Count
+    this.inquirySchedulerIntervalSaveCnt = controller.config.inquirySchedulerInfo.intervalSaveCnt;
+    this.inquirySchedulerCurrCount = 0;
   }
 
   /** DeviceClientModel을 사용하기 위해 Device Controller List를 순회하면서 초기화  */
@@ -127,6 +131,18 @@ class Model {
   async updateDeviceCategory(momentDate, category) {
     // BU.CLIS(category, momentDate);
     try {
+      // 정기 계측 카운팅 증가
+      this.inquirySchedulerCurrCount += 1;
+
+      // 정기 계측 저장 간격 수와 현재 수행된 정기 계측 명령 수가 같지 않다면 데이터 저장 X
+      if (this.inquirySchedulerIntervalSaveCnt !== this.inquirySchedulerCurrCount) {
+        // BU.CLI('뭐죠?', this.inquirySchedulerCurrCount);
+        return false;
+      }
+
+      // 정기 계측 조회 카운팅 초기화
+      this.inquirySchedulerCurrCount = 0;
+
       // Storage에 저장되어 있는 데이터(장치 데이터,)
       // BU.CLI('updateDeviceCategory', category);
       const convertDataList = await this.deviceClientModel.refineTheDataToSaveDB(

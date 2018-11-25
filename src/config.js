@@ -7,8 +7,15 @@ const config = {
     database: process.env.WEB_DB_DB || 'test',
   },
   uuid: '001',
-  inquiryIntervalSecond: 60,
-  inquiryWaitingSecond: 60,
+  inquirySchedulerInfo: {
+    intervalCronFormat: '0 * * * * *',
+    inquiryWaitingSecond: 60,
+    intervalSaveCnt: 1,
+    validInfo: {
+      diffType: 'minutes',
+      duration: 2,
+    },
+  },
   deviceConfigList: [
     {
       inverter_seq: 1,

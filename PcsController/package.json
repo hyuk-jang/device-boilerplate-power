@@ -1,5 +1,5 @@
 {
-  "name": "fb-style",
+  "name": "pcs-controller",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -18,19 +18,19 @@
     "chai": "^4.2.0",
     "docdash": "^1.0.0",
     "dotenv": "^6.1.0",
-    "eslint": "^5.8.0",
+    "eslint": "^5.9.0",
     "eslint-config-airbnb": "^17.1.0",
-    "eslint-config-prettier": "^3.1.0",
+    "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-react": "^7.11.1",
     "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
-    "prettier": "^1.14.3"
+    "prettier": "^1.15.2"
   },
   "dependencies": {
-    "base-util-jh": "^1.1.18",
+    "base-util-jh": "^1.1.23",
     "event-to-promise": "^0.8.0",
     "lodash": "^4.17.11"
   }

@@ -180,7 +180,7 @@ class Control {
 
       // 1분마다 요청
       this.cronScheduler = new cron.CronJob(
-        `*/${this.config.inquiryIntervalSecond} * * * * *`,
+        this.config.inquirySchedulerInfo.intervalCronFormat,
         () => {
           this.inquiryAllDeviceStatus(moment());
         },
@@ -268,7 +268,7 @@ class Control {
     deviceCommandContainer.timeoutTimer = setTimeout(() => {
       deviceCommandContainer.timeoutTimer.complete = true;
       this.model.endDeviceCommand(deviceCommandContainer);
-    }, 1000 * this.config.inquiryWaitingSecond);
+    }, 1000 * this.config.inquirySchedulerInfo.inquiryWaitingSecond);
 
     // 명령 목록에 추가
     this.deviceCommandContainerList.push(deviceCommandContainer);
