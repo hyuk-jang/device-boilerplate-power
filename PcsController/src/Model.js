@@ -19,7 +19,12 @@ class Model {
    * Data 초기화
    */
   initModel() {
-    this.deviceData = BaseModel.Inverter.BASE_MODEL;
+    this.tempStorage = BaseModel.Inverter.BASE_MODEL;
+
+    this.deviceData = {};
+    _.forEach(this.tempStorage, (v, k) => {
+      _.set(this.deviceData, k, null);
+    });
   }
 
   /**
@@ -31,17 +36,27 @@ class Model {
   }
 
   /**
-   * @param {Object} receiveData
+   * 장치에 대한 명령을 2번이상 요청할 경우 데이터 갱신 오류가 발생되기 때문에 최종 데이터 합산을 하기 위한 메소드
+   * @param {Object} receiveData 일부분의 데이터만 수신되었을 경우
    */
-  onData(receiveData) {
-    // BU.CLI(salternData);
-    _.forEach(receiveData, (data, key) => {
-      // Data의 Key가 없거나 Data가 null인 경우 할당하지 않음
-      if (_.has(this.deviceData, key) && data !== null) {
-        this.deviceData[key] = data;
+  onPartData(receiveData) {
+    // 수신받은 데이터 객체 탐색
+    _.forEach(receiveData, (dataList, nodeDefId) => {
+      const data = _.head(dataList);
+      // Data가 null or undefined인 경우 할당하지 않음
+      if (!_.isNil(data)) {
+        // 데이터 목록 중 의미있는 데이터가 있다면 기존 데이터에 덮어쓰기 함
+        _.set(this.tempStorage, `${nodeDefId}[0]`, data);
       }
     });
-    // BU.CLI(this.controller.id, this.deviceData);
+  }
+
+  /** 장치에 대한 명령을 완료하고 임시 저장소에 있는 데이터를 반영할 경우 */
+  completeOnData() {
+    _.forEach(this.tempStorage, (v, k) => {
+      const value = _.isNil(_.head(v)) ? null : _.head(v);
+      _.set(this.deviceData, k, value);
+    });
   }
 }
 

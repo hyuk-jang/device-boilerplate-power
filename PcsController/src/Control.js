@@ -226,13 +226,14 @@ class PcsController extends AbstDeviceClient {
     switch (dcMessage.msgCode) {
       // 명령이 종료되거나 삭제될 경우
       case COMMANDSET_EXECUTION_TERMINATE:
+        this.model.completeOnData();
+        break;
       case COMMANDSET_DELETE:
-        process.env.LOG_PC_RENEWAL_DATA === '1' &&
-          BU.CLI(this.id, this.getDeviceOperationInfo().data);
         break;
       default:
         break;
     }
+    process.env.LOG_PC_RENEWAL_DATA === '1' && BU.CLI(this.id, this.getDeviceOperationInfo().data);
 
     // Observer가 해당 메소드를 가지고 있다면 전송
     this.observerList.forEach(observer => {
@@ -260,15 +261,14 @@ class PcsController extends AbstDeviceClient {
       }
       // Retry 시도 시 다중 명령 요청 및 수신이 이루어 지므로 Retry 하지 않음.
       if (eventCode === ERROR) {
-        BU.errorLog('inverter', 'parsingError', eventCode);
         return this.requestTakeAction(WAIT);
       }
 
       if (eventCode === DONE) {
-        this.model.onData(data);
-      }
+        this.model.onPartData(data);
 
-      return this.requestTakeAction(eventCode);
+        return this.requestTakeAction(eventCode);
+      }
     } catch (error) {
       BU.logFile(error);
       throw error;
