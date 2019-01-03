@@ -145,7 +145,7 @@ class Model {
 
       // Storage에 저장되어 있는 데이터(장치 데이터,)
       // BU.CLI('updateDeviceCategory', category);
-      const convertDataList = await this.deviceClientModel.refineTheDataToSaveDB(
+      const convertDataList = await this.deviceClientModel.refineDataContainer(
         category,
         momentDate.toDate(),
       );
